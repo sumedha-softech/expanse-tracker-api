@@ -16,7 +16,11 @@ const budgetRoutes = require('./routes/budget.route');
 
 app.use(express.json());
 
-app.use(cors({origin: ['http://localhost:4200', process.env.CORS_ORIGIN]}));
+const allowedOrigins = ['http://localhost:4200'];
+if (process.env.CORS_ORIGIN) {
+    allowedOrigins.push(process.env.CORS_ORIGIN);
+}
+app.use(cors({ origin: allowedOrigins }));
 
 const PORT = process.env.PORT || 3000;
 connectToDB();
