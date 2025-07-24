@@ -1,6 +1,6 @@
 const express = require('express');
 const connectToDB = require('./database/db');
-const cors= require('cors')
+const cors= require('cors');
 require('dotenv').config();
 const app =  express();
 
@@ -16,7 +16,7 @@ const budgetRoutes = require('./routes/budget.route');
 
 app.use(express.json());
 
-app.use(cors({origin: ['http://localhost:4200']}))
+app.use(cors({origin: ['http://localhost:4200', process.env.CORS_ORIGIN]}));
 
 const PORT = process.env.PORT || 3000;
 connectToDB();
@@ -30,5 +30,8 @@ app.use('/api/budget', budgetRoutes)
 
 
 app.listen(PORT, ()=>{
-    console.log(`server running on http://loalhost:${PORT}`)
+    console.log(`server running on port ${PORT}`)
 })
+
+module.exports = app;
+// This is the main entry point for the Express application, setting up routes and middleware.
