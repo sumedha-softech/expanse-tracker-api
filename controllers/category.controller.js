@@ -7,17 +7,17 @@ const createLog = require('../utials/log');
 const ApiError = require('../utials/apiError');
 
 
-//getAll Category
-const getAllCategory = asyncHandler(async (req, res) => {
-    const allCategory = await Category.find({});
-    if (allCategory.length === 0) {
-        throw new ApiError(404, 'Category not found');
+//fetch All Categories
+const fetchAllCategories = asyncHandler(async (req, res) => {
+    const categories = await Category.find({});
+    if (categories.length === 0) {
+        return res.status(204).send();
     }
-    res.status(200).json({ success: true, message: 'All Category Fatch Successfully', data: allCategory })
+    res.status(200).json({ success: true, message: 'All Categories Fatched Successfully', data: categories })
 
 });
 //create new Catgeory
-const addNewCategory = asyncHandler(async (req, res) => {
+const createCategory = asyncHandler(async (req, res) => {
     const { name, type } = req.body;
     if (!name || !type) {
         throw new ApiError(400, 'All Fields are required');
@@ -35,7 +35,7 @@ const addNewCategory = asyncHandler(async (req, res) => {
 });
 
 //update categoryByid
-const updateCategory = asyncHandler(async (req, res) => {
+const updateCategoryDetails = asyncHandler(async (req, res) => {
     const categoryUpdateFormData = req.body;
     const getCurrentCategoryById = req.params.id;
     const updateCategory = await Category.findByIdAndUpdate(getCurrentCategoryById, categoryUpdateFormData, { new: true });
@@ -49,7 +49,7 @@ const updateCategory = asyncHandler(async (req, res) => {
 
 
 //delete Category
-const deleteCategory = asyncHandler(async (req, res) => {
+const deleteCategoryById = asyncHandler(async (req, res) => {
     const categoryId = req.params.id;
     const category = await Category.findByIdAndDelete(categoryId);
     if (!category) {
@@ -80,7 +80,7 @@ const deleteCategory = asyncHandler(async (req, res) => {
 
 
 //getcategory BY Id 
-const getCategoryById = asyncHandler(async (req, res) => {
+const fetchCategoryById = asyncHandler(async (req, res) => {
     const getCategoryById = req.params.id;
     const getCategoryDetailsById = await Category.findById(getCategoryById);
     if (!getCategoryDetailsById) {
@@ -90,4 +90,4 @@ const getCategoryById = asyncHandler(async (req, res) => {
 
 });
 
-module.exports = { getAllCategory, addNewCategory, updateCategory, deleteCategory, getCategoryById }
+module.exports = { fetchAllCategories, createCategory,fetchCategoryById, deleteCategoryById, updateCategoryDetails }

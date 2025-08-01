@@ -1,15 +1,15 @@
 const express = require('express');
 const router= express.Router();
-const {getAllAccount, getAccountById, addNewAccount, updateAccount, deleteAccount, transferAmount, updateTransferAmount} = require('../controllers/account.controller');
+const {fetchAllAccounts, fetchAccountById, createAccount, removeAccountById, updateAccountDetails, transferAmountBetweenAccounts, updateTransferTransaction} = require('../controllers/account.controller');
 
 //acount related routes here
-router.get('/getAllAccount', getAllAccount);
-router.get('get/:id',getAccountById )
-router.post('/addAccount', addNewAccount);
-router.put('/updateAccount',updateAccount);
-router.delete('/deleteAccount/:id', deleteAccount);
-router.post('/transferAmount', transferAmount);
-router.put('/updateTransferAmount', updateTransferAmount)
+router.get('/', fetchAllAccounts);
+router.get('/:id',fetchAccountById )
+router.post('/', createAccount);
+router.put('/:id',updateAccountDetails);
+router.delete('/:id', removeAccountById);
+router.post('/transfer', transferAmountBetweenAccounts);
+router.put('/transfer/:id', updateTransferTransaction)
 
 
 module.exports = router;

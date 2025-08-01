@@ -4,19 +4,18 @@ const asyncHandler = require('../utials/asyncHandler');
 const createLog = require('../utials/log');
 const ApiError = require('../utials/apiError');
 
-//fatch all Records
-const getAllRecord = asyncHandler(async (req, res) => {
-    const getTransaction = await RecordList.find({}).sort({ date: -1 });
-    if (getTransaction.length === 0) {
-        throw new ApiError(404, 'No transaction found');
-
+// transaction Records
+const fetchAllRecords = asyncHandler(async (req, res) => {
+    const transactions = await RecordList.find({}).sort({ date: -1 });
+    if (transactions.length === 0) {
+      return res.status(204).send();
     }
-    return res.status(200).json({ success: true, message: 'All  Transaction Record Fetch Successfully', data: getTransaction })
+    return res.status(200).json({ success: true, message: 'All Transaction Record Fetched Successfully', data: transactions })
 
 });
 
 // create new Transaction Records
-const addNewRecord = asyncHandler(async (req, res) => {
+const createRecord = asyncHandler(async (req, res) => {
     const { addNote, amount, type, account, category, date } = req.body;
     if (!amount || !account) {
         throw new ApiError(400, "All Fields are required");
@@ -44,18 +43,17 @@ const addNewRecord = asyncHandler(async (req, res) => {
 
 
 //getRecordDetails byId
-const getRecordById = asyncHandler(async (req, res) => {
+const fetchTransactionRecordById = asyncHandler(async (req, res) => {
     const recordId = req.params.id;
     const record = await RecordList.findById(recordId);
     if (!record) {
         throw new ApiError(404, 'Record Details Not Found')
     }
     return res.status(200).json({ success: true, message: 'Record Details Fetch Success', data: record })
-
 });
 
 //deleteRecord and update Amount 
-const deleteRecord = asyncHandler(async (req, res) => {
+const deleteRecordById = asyncHandler(async (req, res) => {
     const record = await RecordList.findById(req.params.id);
     if (!record) {
         throw new ApiError(404, 'Transaction Record not found');
@@ -92,7 +90,7 @@ const deleteRecord = asyncHandler(async (req, res) => {
 
 
 //update Records Details
-const updateRecord = asyncHandler(async (req, res) => {
+const updateRecordDetails = asyncHandler(async (req, res) => {
     const recordUpdateFormData = req.body;
     const recordId = req.params.id;
     const getRecordDetails = await RecordList.findById(recordId);
@@ -116,7 +114,7 @@ const updateRecord = asyncHandler(async (req, res) => {
 });
 
 
-module.exports = { getAllRecord, addNewRecord, deleteRecord, getRecordById, updateRecord }
+module.exports = { fetchAllRecords, createRecord, fetchTransactionRecordById, deleteRecordById, updateRecordDetails }
 
 
 

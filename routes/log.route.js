@@ -1,9 +1,9 @@
 const  express= require('express');
 const router = express.Router();
-const  {getAllLogs} = require('../controllers/log-activity.controller');
+const  {fetchAllLogs} = require('../controllers/log-activity.controller');
 
 
-router.get('/getAllLogs', getAllLogs);
+router.get('/',  fetchAllLogs);
 
 
 module.exports = router;

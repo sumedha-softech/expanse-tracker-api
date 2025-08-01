@@ -8,25 +8,25 @@ const ApiError = require('../utials/apiError');
 
 
 //find all budget
-const getAllBudget = asyncHandler(async (req, res) => {
-    const getBudget = await Budget.find({});
-    if (getBudget.length === 0) {
-        throw new ApiError(404,'Budget not found');
+const fetchAllBudgets = asyncHandler(async (req, res) => {
+    const budgets = await Budget.find({});
+    if (budgets.length === 0) {
+        return res.status(204).send();
     }
-    res.status(200).json({ success: true, message: 'All Budget Fatch Success', data: getBudget });
+    res.status(200).json({ success: true, message: 'All Budgets Fatched Successfully', data: budgets });
 });
 
 //set Budget with selected category
-const addNewBudget = asyncHandler(async (req, res) => {
+const createBudget = asyncHandler(async (req, res) => {
     const { categoryId, limit, date } = req.body;
     if (!categoryId || !limit) {
-        throw new ApiError(400,'All Fields are required');
+        throw new ApiError(400, 'All Fields are required');
     }
-    
-     const category = await Category.findById(categoryId);
-     if(!category) {
-        throw new ApiError(404,'Category not found');
-     }
+
+    const category = await Category.findById(categoryId);
+    if (!category) {
+        throw new ApiError(404, 'Category not found');
+    }
 
     const budget = await Budget.create({
         category: categoryId,
@@ -39,32 +39,32 @@ const addNewBudget = asyncHandler(async (req, res) => {
 
 
 //Update budget by ID
-const updateBudget = asyncHandler(async (req, res) => {
+const updateBudgetDetails = asyncHandler(async (req, res) => {
     const budgetUpdateFormData = req.body;
     const getCurrentBudget = req.params.id;
     const { limit } = req.body;
     if (!limit) {
-        throw new ApiError(400,'limit is required');
+        throw new ApiError(400, 'limit is required');
     }
     const updatedBudget = await Budget.findByIdAndUpdate(getCurrentBudget, budgetUpdateFormData, { new: true }
     );
     if (!updatedBudget) {
-        throw new ApiError(404,'Budget not found');
+        throw new ApiError(404, 'Budget not found');
     }
     await createLog(`update budget with new limit ${updatedBudget.limit}`)
     res.status(200).json({ success: true, message: 'Budget updated successfully', data: updatedBudget });
 });
 
 //deleted budget
-const deleteBudget = asyncHandler(async (req, res) => {
+const deleteBudgetById = asyncHandler(async (req, res) => {
     const getBudgetId = req.params.id;
     const deletedBudget = await Budget.findByIdAndDelete(getBudgetId);
     if (!deletedBudget) {
-        throw new ApiError(404,'Budget not found');
+        throw new ApiError(404, 'Budget not found');
     }
     await createLog(`deleted a monthly budget of limit ₹${deletedBudget.limit}`)
     res.status(200).json({ success: true, message: 'Category Budget Delete Success', data: deletedBudget });
 
 });
 
-module.exports = { getAllBudget, addNewBudget, updateBudget, deleteBudget };
+module.exports = { fetchAllBudgets, createBudget, deleteBudgetById, updateBudgetDetails };

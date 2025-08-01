@@ -7,11 +7,11 @@ require('dotenv').config();
 const app = express();
 
 //route
-const category = require('./routes/category.route');
-const account = require('./routes/account.route');
-const record = require('./routes/record-list.route');
-const log = require('./routes/log.route');
-const budget = require('./routes/budget.route');
+const categories = require('./routes/category.route');
+const accounts = require('./routes/account.route');
+const records = require('./routes/record-list.route');
+const logs = require('./routes/log.route');
+const budgets= require('./routes/budget.route');
 
 
 const allowOrigin = process.env.ORIGIN_URL;
@@ -22,11 +22,11 @@ const PORT = process.env.PORT || 3000;
 connectToDB();
 
 
-app.use('/api/category', category);
-app.use('/api/account', account);
-app.use('/api/record', record);
-app.use('/api/log', log);
-app.use('/api/budget', budget)
+app.use('/api/categories',categories);
+app.use('/api/accounts', accounts);
+app.use('/api/records', records);
+app.use('/api/logs', logs);
+app.use('/api/budgets', budgets)
 
 
 app.use(errorHandler);

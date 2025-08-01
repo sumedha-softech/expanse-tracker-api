@@ -6,19 +6,22 @@ const ApiError = require('../utials/apiError');
 
 
 //getAllAccounts
-const getAllAccount = asyncHandler(async (req, res) => {
-    const account = await Account.find({}).populate('recordId');
-    if (account.length === 0) {
-        throw new  ApiError(404, 'No account found')
+const fetchAllAccounts = asyncHandler(async (req, res) => {
+    const accounts = await Account.find({}).populate('recordId');
+    if (accounts.length === 0) {
+        return res.status(204).send()
     }
-    res.status(200).json({ success: true, message: 'All Accounts Fetch Successfully', data: account });
+    res.status(200).json({ success: true, message: 'All Accounts Fetched Successfully', data: accounts });
 });
 
+
+
+
 //create New account
-const addNewAccount = asyncHandler(async (req, res) => {
+const createAccount = asyncHandler(async (req, res) => {
     const { name, amount, type } = req.body;
     if (!name) {
-        throw new ApiError(400,'Account name is required');
+        throw new ApiError(400, 'Account name is required');
     }
     const newCreatedAccount = await Account.create({ name, amount: 0, type });
     if (amount && amount > 0) {
@@ -37,12 +40,12 @@ const addNewAccount = asyncHandler(async (req, res) => {
 });
 
 
-//deleteAccount from account list
-const deleteAccount = asyncHandler(async (req, res) => {
+//remove Account from account list
+const removeAccountById = asyncHandler(async (req, res) => {
     const accountId = req.params.id;
     const deleteAccount = await Account.findById(accountId);
     if (!deleteAccount) {
-        throw new ApiError(404,'Account not found')
+        throw new ApiError(404, 'Account not found')
     }
     //find all transaction of transfer amount
     const transferAmount = await RecordList.find({ toAccount: accountId, isTransfer: true });
@@ -69,21 +72,21 @@ const deleteAccount = asyncHandler(async (req, res) => {
 
 
 // transfer amount from one account to another
-const transferAmount = asyncHandler(async (req, res) => {
+const transferAmountBetweenAccounts = asyncHandler(async (req, res) => {
     const { fromAccountId, toAccountId, amount } = req.body;
     if (!fromAccountId || !toAccountId || !amount || amount <= 0) {
-        throw new ApiError(400,'Enter a valid Amount.! Must be greater then 0')
+        throw new ApiError(400, 'Enter a valid Amount.! Must be greater then 0')
     }
     if (fromAccountId === toAccountId) {
-        throw new ApiError(400,'Both accounts are same choose different Account.')
+        throw new ApiError(400, 'Both accounts are same choose different Account.')
     }
     const fromAccount = await Account.findById(fromAccountId);
     const toAccount = await Account.findById(toAccountId);
     if (!fromAccount || !toAccount) {
-        throw new ApiError(404,'Account not found');
+        throw new ApiError(404, 'Account not found');
     }
     if (fromAccount.amount < amount) {
-        throw new ApiError(400,'Insufficient Amount.!');
+        throw new ApiError(400, 'Insufficient Amount.!');
     }
     //amount transfer 
     fromAccount.amount -= amount;
@@ -107,37 +110,39 @@ const transferAmount = asyncHandler(async (req, res) => {
 
 
 // Update an existing transfer transaction records
-const updateTransferAmount = asyncHandler(async (req, res) => {
+const updateTransferTransaction = asyncHandler(async (req, res) => {
     const { fromAccountId, toAccountId, amount, recordId } = req.body;
     if (!recordId || !fromAccountId || !toAccountId || !amount || amount <= 0) {
-        throw new ApiError(400,'invalid transfer Amount');
+        throw new ApiError(400, 'invalid transfer Amount');
     }
     if (fromAccountId === toAccountId) {
-        throw new ApiError(400,'Both Accounts cannot be the same');
+        throw new ApiError(400, 'Both Accounts cannot be the same');
     }
     const record = await RecordList.findById(recordId);
     if (!record || !record.isTransfer) {
-        throw new ApiError(404,'Transfer record not found');
+        throw new ApiError(404, 'Transfer record not found');
     }
     //updated Amount after updated Transfer Transaction add back amount while updating transaction record
     const oldFromAccount = await Account.findById(record.fromAccount);
     const oldToAccount = await Account.findById(record.toAccount);
     if (oldFromAccount) {
         oldFromAccount.amount += record.amount;
+        await oldFromAccount.save();
     }
     if (oldToAccount) {
-        oldToAccount.amount -= record.amount
+        oldToAccount.amount -= record.amount;
+        await oldToAccount.save();
     }
-    await oldFromAccount.save();
-    await oldToAccount.save();
+
+
     //Fetch and validate Accounts
     const newFromAccount = await Account.findById(fromAccountId);
     const newToAccount = await Account.findById(toAccountId);
     if (!newFromAccount || !newToAccount) {
-        throw new ApiError(404,'Account not found');
+        throw new ApiError(404, 'Account not found');
     }
     if (newFromAccount.amount < amount) {
-        throw new ApiError(400,'Insufficient Amount.!')
+        throw new ApiError(400, 'Insufficient Amount.!')
     }
 
     newFromAccount.amount -= amount,
@@ -158,70 +163,70 @@ const updateTransferAmount = asyncHandler(async (req, res) => {
 });
 
 //Fetch accountDetails by AccountId
-const getAccountById = asyncHandler(async (req, res) => {
-    const getAccountById = req.params.id;
-    const getAccountDetailsById = await Account.findById(getAccountById);
-    if (!getAccountDetailsById) {
-        throw new ApiError(404,'Account not Found');
+const fetchAccountById = asyncHandler(async (req, res) => {
+    const fetchAccountById = req.params.id;
+    const fetchAccountDetailsById = await Account.findById(fetchAccountById);
+    if (!fetchAccountDetailsById) {
+        throw new ApiError(404, 'Account not Found');
     }
-    res.status(200).json({ success: true, message: 'Account Details Fetch Successful', data: getAccountDetailsById });
+    res.status(200).json({ success: true, message: 'Account Details Fetch Successful', data: fetchAccountDetailsById });
 
 });
 
 
 //update account and adjust account balance after updation
-const updateAccount = asyncHandler(async (req, res) => {
+const updateAccountDetails = asyncHandler(async (req, res) => {
     const { accountId, recordId, name, amount } = req.body;
     if (!accountId || !name || amount == null) {
-        throw new ApiError(400,'All fields are required');
+        throw new ApiError(400, 'All fields are required');
     }
-    //find account byId
     const account = await Account.findById(accountId);
     if (!account) {
-        throw new ApiError(404,'Account not found');
+        throw new ApiError(404, 'Account not found');
     }
-    const oldAmount = account.amount;
-    const newAmount = amount;
-    const currentAmount = newAmount - oldAmount;
-    //Update Account Name and Amount
+    let message = '';
     account.name = name;
-    account.amount = newAmount;
-    await account.save();
+    message = `Account "${name}" updated.`;
+    if (recordId) {
+        const record = await RecordList.findById(recordId);
+        if (record && record.isInitialEntry) {
+            const oldInitialAmount = record.amount;
+            if (amount === 0) {
+                await RecordList.findByIdAndDelete(recordId);
+                const remaining = account.amount - oldInitialAmount;
+                account.amount = remaining;
+                account.recordId = null;
+                message += ` Initial record deleted (was ₹${oldInitialAmount}).`;
+            } else {
+                const remaining = account.amount - oldInitialAmount;
+                record.amount = amount;
+                record.addNote = `Initial amount updated to ₹${amount}`;
+                await record.save();
 
-    let message = `Account "${name}" updated. Amount changed from ₹${oldAmount} to ₹${newAmount}`;
-    ///delete transaction record Entry when updated amount equal zero
-    if (recordId && newAmount === 0) {
-        const record = await RecordList.findById(recordId);
-        if (record && record.isInitialEntry) {
-            await RecordList.findByIdAndDelete(recordId);
-            account.recordId = null;
-            await account.save();
+                account.amount = remaining + amount;
+                message += ` Initial amount changed from ₹${oldInitialAmount} to ₹${amount}.`;
+            }
+        } else {
+            throw new ApiError(400, 'Invalid initial entry');
+        }
+
+    } else {
+        if (amount > 0) {
+            const createdRecord = await RecordList.create({
+                amount,
+                type: 'income',
+                account: account._id,
+                addNote: `Initial amount set to ₹${amount}`,
+                isInitialEntry: true,
+            });
+            account.amount += amount;
+            account.recordId = createdRecord._id;
+            message += ` Initial record created with ₹${amount}.`;
         }
     }
-    else if (recordId && newAmount > 0) {
-        const record = await RecordList.findById(recordId);
-        if (record && record.isInitialEntry) {
-            record.amount = newAmount;
-            record.addNote = `Account "${name}" updated with amount ₹${newAmount}`;
-            await record.save();
-            message += `transaction record updated`;
-        }
-    }
-    //if user have no record exists and new Amount more then 0 create record
-    else if (!recordId && newAmount > 0) {
-        const createdRecord = await RecordList.create({
-            amount: newAmount,
-            type: 'income',
-            account: account._id,
-            addNote: `Account "${name}" updated with initial amount ₹${newAmount}`,
-            isInitialEntry: true
-        });
-        account.recordId = createdRecord._id;
-        await account.save();
-    }
-    await createLog(`Initial transaction record created with ₹${newAmount}`);
-    res.status(200).json({ success: true, message: 'Account and Transaction updated successfully', data: account });
+    await account.save();
+    await createLog(message);
+    res.status(200).json({ success: true, message, data: account });
 });
 
-
-module.exports = { getAllAccount, addNewAccount, getAccountById, deleteAccount, transferAmount, updateAccount, updateTransferAmount };
+module.exports = { fetchAllAccounts, fetchAccountById, createAccount, removeAccountById, updateAccountDetails, updateTransferTransaction, transferAmountBetweenAccounts };
