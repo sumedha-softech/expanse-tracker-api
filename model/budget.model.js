@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const BUdgetSchema = new mongoose.Schema({
+const BudgetSchema = new mongoose.Schema({
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',
@@ -16,4 +16,4 @@ const BUdgetSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-module.exports = mongoose.model('Budget', BUdgetSchema);
+module.exports = mongoose.model('Budget', BudgetSchema);

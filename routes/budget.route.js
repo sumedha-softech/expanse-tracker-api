@@ -1,12 +1,12 @@
 const express = require('express');
 const router= express.Router();
-const {getAllBudget, addNewBudget, updateBudget,deleteBudget}   = require('../controllers/budget.controller');
+const {fetchAllBudgets,createBudget, deleteBudgetById, updateBudgetDetails }   = require('../controllers/budget.controller');
 
 
 //budget related routes here
-router.post('/addNewBudget', addNewBudget);
-router.get('/getAllBudget', getAllBudget);
-router.delete('/deleteBudget/:id', deleteBudget);
-router.put('/updateBudget/:id', updateBudget)
+router.get('/', fetchAllBudgets);
+router.post('/', createBudget);
+router.delete('/:id',deleteBudgetById);
+router.put('/:id', updateBudgetDetails)
 
 module.exports = router;

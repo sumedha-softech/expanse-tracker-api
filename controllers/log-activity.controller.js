@@ -1,22 +1,18 @@
-const Log = require('../model/log.model')
+const Log = require('../model/log.model');
+const asyncHandler = require('../utials/asyncHandler');
+const ApiError = require('../utials/apiError');
 
 //get All activity logs
-const getAllLogs = async (req, res) => {
-    try {
-        const getAllLogActivity = await Log.find({}).populate('userId');
-        if (getAllLogActivity.length > 0) {
-            return res.status(200).json({ success: true, message: 'Activity logs fetched', data: getAllLogActivity });
-        }
-        else {
-            return res.status(404).json({ success: false, message: 'log activity not found' })
-        }
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ success: false, message: 'Error fetching logs' });
+const fetchAllLogs = asyncHandler(async (req, res) => {
+    const logs = await Log.find({}).populate('userId').sort({date: -1});
+    if (logs.length === 0) {
+        return res.status(204).send();
     }
-}
+    res.status(200).json({ success: true, message: 'All Logs Fetched Successfully', data:logs });
+
+});
 
 
-module.exports = { getAllLogs }
+module.exports = { fetchAllLogs }
 
 

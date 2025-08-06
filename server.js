@@ -1,40 +1,37 @@
 const express = require('express');
 const connectToDB = require('./database/db');
-const cors= require('cors');
+const bodyParser = require('body-parser');
+const errorHandler = require('./middleware/errorHandler')
+const cors = require('cors')
 require('dotenv').config();
-const app =  express();
+const app = express();
 
-//category route
-const categoryRoutes = require('./routes/category.route');
-//account routes
-const accountRoutes = require('./routes/account.route');
-
-const recordRoutes =require('./routes/record-list.route');
-const logRoutes = require('./routes/log.route');
-const budgetRoutes = require('./routes/budget.route');
+//route
+const categories = require('./routes/category.route');
+const accounts = require('./routes/account.route');
+const records = require('./routes/record-list.route');
+const logs = require('./routes/log.route');
+const budgets= require('./routes/budget.route');
 
 
+const allowOrigin = process.env.ORIGIN_URL;
 app.use(express.json());
-
-const allowedOrigins = ['http://localhost:4200'];
-if (process.env.CORS_ORIGIN) {
-    allowedOrigins.push(process.env.CORS_ORIGIN);
-}
-app.use(cors({ origin: allowedOrigins }));
-
+app.use(cors({ origin: [allowOrigin], credentials: true }))
+app.use(bodyParser.urlencoded({ extended: true }))
 const PORT = process.env.PORT || 3000;
 connectToDB();
 
 
-app.use('/api/category', categoryRoutes);
-app.use('/api/account',accountRoutes );
-app.use('/api/record', recordRoutes);
-app.use('/api/log', logRoutes);
-app.use('/api/budget', budgetRoutes)
+app.use('/api/categories',categories);
+app.use('/api/accounts', accounts);
+app.use('/api/records', records);
+app.use('/api/logs', logs);
+app.use('/api/budgets', budgets)
 
 
-app.listen(PORT, ()=>{
-    console.log(`server running on port ${PORT}`)
+app.use(errorHandler);
+app.listen(PORT, () => {
+   console.log(`server running on port ${PORT}`)
 })
 
 module.exports = app;
